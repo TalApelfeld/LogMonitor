@@ -12,8 +12,9 @@ import {
 import { useAuth } from "../../hooks/useAuth";
 import { useDispatch } from "react-redux";
 import { logout } from "../../store/slices/authSlice";
-import { clsx } from "clsx";
+import clsx from "clsx";
 import { LogFileUpload } from "../Logss/LogFileUpload";
+import { NavLink } from "react-router-dom";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -89,7 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <div className="flex items-center">
               <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-medium">
-                  {user?.name.charAt(0).toUpperCase()}
+                  {user?.name?.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div className="ml-3">
@@ -108,20 +109,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               const Icon = item.icon;
 
               return (
-                <a
+                <NavLink
                   key={item.name}
-                  href={item.href}
-                  className={clsx(
-                    "flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-                    isActive
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  )}
+                  to={item.href}
+                  className={({ isActive }) =>
+                    clsx(
+                      "flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                      isActive
+                        ? "bg-blue-600 text-white"
+                        : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                    )
+                  }
                   onClick={onClose}
                 >
                   <Icon className="w-5 h-5 mr-3" />
                   {item.name}
-                </a>
+                </NavLink>
               );
             })}
             <LogFileUpload />

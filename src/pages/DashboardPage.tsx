@@ -6,12 +6,14 @@ import { LogsChart } from "../components/Dashboard/LogsChart";
 import { ServiceStats } from "../components/Dashboard/ServiceStats";
 import { fetchAnalytics } from "../store/slices/analyticsSlice";
 import { AppDispatch, RootState } from "../store";
+import { data } from "react-router-dom";
 
 export const DashboardPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { data: analytics, isLoading } = useSelector(
     (state: RootState) => state.analytics
   );
+  console.log("Analytics Data:", data);
 
   useEffect(() => {
     dispatch(fetchAnalytics("24h"));

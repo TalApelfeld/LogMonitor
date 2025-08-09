@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { AuthState, User } from "../../types";
 
-const API_BASE_URL = "api";
+const API_BASE_URL = "/api";
 
 export const loginUser = createAsyncThunk(
   "auth/login",
@@ -45,6 +45,22 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+export const verifyToken = createAsyncThunk(
+  "auth/verifyToken",
+  async (_, { getState, rejectWithValue }) => {
+    const state = getState() as any;
+    const token = state.auth.token || localStorage.getItem("token");
+    if (!token) return rejectWithValue("No token");
+    const res = await fetch(`${API_BASE_URL}/auth/verifyToken`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      return rejectWithValue(await res.text());
+    }
+    const data = await res.json(); // { user: {...} }
+    return data.user as User;
+  }
+);
 const initialState: AuthState = {
   user: null,
   token: localStorage.getItem("token"),
@@ -70,34 +86,49 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(loginUser.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+      // login/register as you already have...
+      .addCase(loginUser.pending, (s) => {
+        s.isLoading = true;
+        s.error = null;
       })
-      //// The action is the return value of the 'loginUser' thunk
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        localStorage.setItem("token", action.payload.token);
+      .addCase(loginUser.fulfilled, (s, a) => {
+        s.isLoading = false;
+        s.user = a.payload.user;
+        s.token = a.payload.token;
+        localStorage.setItem("token", a.payload.token);
       })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.error.message || "Login failed";
+      .addCase(loginUser.rejected, (s, a) => {
+        s.isLoading = false;
+        s.error = a.error.message || "Login failed";
       })
-      .addCase(registerUser.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+      .addCase(registerUser.pending, (s) => {
+        s.isLoading = true;
+        s.error = null;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        localStorage.setItem("token", action.payload.token);
+      .addCase(registerUser.fulfilled, (s, a) => {
+        s.isLoading = false;
+        s.user = a.payload.user;
+        s.token = a.payload.token;
+        localStorage.setItem("token", a.payload.token);
       })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.error.message || "Registration failed";
+      .addCase(registerUser.rejected, (s, a) => {
+        s.isLoading = false;
+        s.error = a.error.message || "Registration failed";
+      })
+
+      // NEW: verifyToken lifecycle
+      .addCase(verifyToken.pending, (s) => {
+        s.isLoading = true;
+      })
+      .addCase(verifyToken.fulfilled, (s, a) => {
+        s.isLoading = false;
+        s.user = a.payload;
+        // keep existing token from storage/state
+      })
+      .addCase(verifyToken.rejected, (s) => {
+        s.isLoading = false;
+        // optional hard-logout on invalid token:
+        // s.user = null; s.token = null; localStorage.removeItem("token");
       });
   },
 });

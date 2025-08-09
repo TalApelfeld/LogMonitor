@@ -15,6 +15,8 @@ export const fetchAnalytics = createAsyncThunk(
       },
     });
 
+    // console.log(await response.json());
+
     if (!response.ok) {
       throw new Error("Failed to fetch analytics");
     }

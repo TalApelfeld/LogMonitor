@@ -6,4 +6,6 @@ export const authRouter = express.Router();
 
 authRouter.post("/register", registerUser);
 authRouter.post("/login", loginUser);
-authRouter.get("/verifyToken", authenticateToken);
+authRouter.get("/verifyToken", authenticateToken, (req: any, res) => {
+  res.json({ user: req.user });
+});
